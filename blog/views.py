@@ -1,7 +1,9 @@
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.urls import reverse
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views.generic.edit import FormMixin
 
 from .models import Post, Comment
 from .forms import CommentForm
@@ -27,27 +29,33 @@ class PostListView(ListView):
     ordering = ['-date_posted']  # Ordena los post mas nuevos en el top
 
 
-class PostDetailView(DetailView):
+class PostDetailView(FormMixin, DetailView):
     model = Post
-    comment_form = CommentForm()
+    form_class = CommentForm
     template_name = 'blog/post_detail.html'
+    success_url = '/'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         comments = Comment.objects.filter(post=self.get_object())
         context['comments'] = comments
-        context['comment_form'] = self.comment_form
+        context['form'] = self.get_form()
+
         return context
 
     def post(self, request, *args, **kwargs):
-        self.comment_form = CommentForm(request.POST)
-        if self.comment_form.is_valid():
-            self.comment_form.save()
-            messages.success(request, f'Your comment has been added!')
-        return render(request, self.template_name, self.get_context_data(**kwargs))
+        self.success_url = self.request.get_full_path()
+        self.object = self.get_object()
+        form = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
 
     def form_valid(self, form):
-        form.instance.author = self.request.user
+        form.instance.user = self.request.user
+        form.instance.post = self.object
+        form.save()
         return super().form_valid(form)
 
 

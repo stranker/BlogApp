@@ -55,7 +55,19 @@ a.article-title:hover {
   margin-right: 16px;
 }
 
+.user-img {
+  height: 16px;
+  width: 16px;
+  margin-right: 16px;
+}
+
 .article-metadata {
+  padding-bottom: 1px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #e3e3e3
+}
+
+.comment-metadata {
   padding-bottom: 1px;
   margin-bottom: 4px;
   border-bottom: 1px solid #e3e3e3
