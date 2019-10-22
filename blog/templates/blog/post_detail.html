@@ -1,4 +1,5 @@
 {% extends "blog/base.html" %}
+{% load crispy_forms_tags %}
 {% block content %}
     <article class="media content-section">
         <img class="rounded-circle article-img" src="{{ object.author.profile.image.url }}">
@@ -15,6 +16,29 @@
             </div>
             <h2 class="article-title">{{ object.title }}</h2>
             <p class="article-content">{{ object.content }}</p>
+            <h4 class="article-comment-title">({{comments|length}}) Comments</h4>
+            <div class="article-comments">
+                {% for comment in comments %}
+                    <div class="comment">
+                        <strong>{{ comment.user }}</strong>
+                        <small class="text-muted">{{ comment.date_posted |timesince }}</small>
+                        <p>{{ comment.content|linebreaks }}</p>
+                    </div>
+                {% empty %}
+                    <p>No comments yet(</p>
+                {% endfor %}
+                {% if user.is_authenticated %}
+                    <form method="POST">
+                        {% csrf_token %}
+                        <h4><strong>Leave a comment!</strong></h4>
+                        {{ comment_form|crispy }}
+                        <button class="btn btn-outline-secondary" type="submit">Add Comment</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}">Log In To Leave A Comment</a>
+                {% endif %}
+
+            </div>
         </div>
     </article>
 {% endblock content %}
